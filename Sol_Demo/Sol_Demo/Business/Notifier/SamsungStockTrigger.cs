@@ -25,21 +25,23 @@ namespace Sol_Demo.Business.Notifier
 
         async Task ISamsungStockTrigger.ChangePriceAsync(StockPriceModel stockPriceModel)
         {
-            try
-            {
-                this.samsungStockNotifier.OnNotify += SamsungStockNotifier_OnNotify;
-                await this.samsungStockNotifier.NotifyAsync(stockPriceModel);
-            }
-            finally
-            {
-                this.samsungStockNotifier.OnNotify -= SamsungStockNotifier_OnNotify;
-            }
+            //this.samsungStockNotifier.OnNotify += SamsungStockNotifier_OnNotify;
+
+            EventHandler<Action<List<IObserver>>> @event = (sender, notifyToInvestors) => notifyToInvestors.Invoke(this.listInvestors);
+
+            // Subscribe event
+            this.samsungStockNotifier.OnNotify += @event;
+
+            await this.samsungStockNotifier.NotifyAsync(stockPriceModel);
+
+            // UnSubscribe event
+            this.samsungStockNotifier.OnNotify -= @event;
         }
 
-        private void SamsungStockNotifier_OnNotify(object sender, Action<List<IObserver>> e)
-        {
-            // Notify to All Investors
-            e.Invoke(this.listInvestors);
-        }
+        //private void SamsungStockNotifier_OnNotify(object sender, Action<List<IObserver>> notifyToInvestors)
+        //{
+        //    // Notify to All Investors
+        //    notifyToInvestors.Invoke(this.listInvestors);
+        //}
     }
 }
